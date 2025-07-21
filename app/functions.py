@@ -7,6 +7,26 @@ from sentence_transformers import SentenceTransformer, util
 
 model = SentenceTransformer("allenai-specter")
 
+def get_citation_count(arxiv_id):
+    try:
+        r = requests.post(
+            'https://api.semanticscholar.org/graph/v1/paper/batch',
+            params={'fields': 'citationCount'},
+            json={"ids": [f"ARXIV:{arxiv_id.split('v')[0]}"]}
+        )
+        if r.status_code != 200:
+            print(f"Semantic Scholar API error: {r.status_code}")
+            return "--"
+
+        data = r.json()
+        print(f"Retrieved citation count for {arxiv_id}: {data}")
+        count = data[0].get("citationCount")
+        return str(count) if count is not None else "--"
+
+    except (IndexError, KeyError, requests.RequestException) as e:
+        print(f"Error retrieving citation count for {arxiv_id}: {e}")
+        return "--"
+
 def search_arxiv(query: str, max_results: int):
     client = arxiv.Client()
     search = arxiv.Search(
@@ -20,7 +40,7 @@ def search_arxiv(query: str, max_results: int):
     for result in client.results(search):
         if result.published >= timer:
             arxiv_id = result.entry_id.split("/")[-1]
-            citation_count = 0
+            citation_count = get_citation_count(arxiv_id)
             results.append({
                 "title": result.title,
                 "summary": result.summary,
