@@ -12,6 +12,7 @@ dependencies = [
     "flet",
     "sentence-transformers",
     "torch",
+    "pymupdf",
 ]
 
 [build-system]

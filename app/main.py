@@ -42,6 +42,7 @@ def main(page: ft.Page):
                                     ),
                                     ft.Text(f"Similarity: {article['score']:.4f}", color=ft.Colors.GREY_400, size=16),
                                     ft.Text(f"Published: {article['published'].date()}", color=ft.Colors.GREY_400, size=16),
+                                    ft.Text(f"Citations: {article['citations']}", color=ft.Colors.GREY_400, size=16),
                                     ft.TextField(
                                         value=article['summary'],
                                         read_only=True,
@@ -60,8 +61,8 @@ def main(page: ft.Page):
                 else:
                     results_column.controls.append(ft.Text("No results found.", color=ft.Colors.GREY_300))
             except Exception as ex:
-                results_column.controls.append(ft.Text(f"Error; enter a new query", color=ft.Colors.RED))
-
+                results_column.controls.append(ft.Text(f"Error - {ex}; enter a new query", color=ft.Colors.RED))
+                print(f"Error during search: {ex}")
         page.update()
 
     text_input = ft.TextField(
