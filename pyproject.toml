@@ -8,12 +8,16 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "arxiv",
-    "flet",
-    "sentence-transformers",
-    "torch",
-    "pymupdf",
+    "arxiv (>=2.2.0,<2.3.0)",
+    "flet (>=0.28.3,<0.29.0)",
+    "sentence-transformers (>=5.0.0,<6.0.0)",
+    "pandas (>=2.3.1,<2.4.2)",
+    "pymupdf (>=1.26.3,<1.26.4)",
+    "google-genai (>=1.27.0,<1.28.0)",
+    "tokenizers (>=0.21.2,<0.21.4)",
+    "ijson (>=3.4.0,<3.5.0)",
 ]
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
