@@ -2,6 +2,7 @@ import arxiv
 import requests
 import os
 import fitz
+import numpy as np
 from datetime import datetime, timedelta, timezone
 from sentence_transformers import SentenceTransformer, util
 
@@ -69,6 +70,19 @@ def extract_text_from_pdf(pdf_path: str):
             text += page.get_text()
     return text
 
+def compute_quality_score(similarity, citations, pub_year):
+    current_year = datetime.now(timezone.utc).year
+    alpha = 0.4
+    beta = 0.6
+    citation_rate = citations / (current_year - pub_year + 1)
+    return alpha * similarity + beta * np.log1p(citation_rate)
+
+def safe_int(value: int, default=0):
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return default
+
 def semantic_sort(query: str, articles: list):
     query_embedding = model.encode(query, convert_to_tensor=True)
 
@@ -76,6 +90,7 @@ def semantic_sort(query: str, articles: list):
     for article in articles:
         try:
             pdf_path = download_pdf(article["pdf_url"])
+            print("Ready: ", pdf_path)
             fulltext = extract_text_from_pdf(pdf_path)
             article["fulltext"] = fulltext
         except Exception as e:
@@ -87,5 +102,7 @@ def semantic_sort(query: str, articles: list):
     similarities = util.cos_sim(query_embedding, text_embeddings)[0]
 
     for ind, article in enumerate(articles):
-        article['score'] = float(similarities[ind])
+        similarity = float(similarities[ind])
+        article['score'] = compute_quality_score(similarity, safe_int(article["citations"]), article["published"].year)
+
     return sorted(articles, key=lambda x: x['score'], reverse=True)
