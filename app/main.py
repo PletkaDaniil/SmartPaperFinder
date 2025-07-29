@@ -44,7 +44,7 @@ def main(page: ft.Page):
                                     ft.Text(f"Published: {article['published'].date()}", color=ft.Colors.GREY_400, size=16),
                                     ft.Text(f"Citations: {article['citations']}", color=ft.Colors.GREY_400, size=16),
                                     ft.TextField(
-                                        value=article['summary'],
+                                        value=article['generated_summary'],
                                         read_only=True,
                                         multiline=True,
                                         border=None,

@@ -3,10 +3,29 @@ import requests
 import os
 import fitz
 import numpy as np
+from google import genai
 from datetime import datetime, timedelta, timezone
 from sentence_transformers import SentenceTransformer, util
 
 model = SentenceTransformer("allenai-specter")
+with open(os.path.abspath("app/API_KEY"), "r") as file:
+    api_key = file.read().strip()
+client = genai.Client(api_key=api_key)
+
+
+def translate_text(text):
+    response = client.models.generate_content(
+        model='gemini-2.0-flash-001',
+        contents=['Translate this text to Russian:', text]
+    )
+    return response.text
+
+def generate_summary(text):
+    response = client.models.generate_content(
+        model='gemini-2.0-flash-001',
+        contents=['Could you summarize this text?', text]
+    )
+    return translate_text(response.text)
 
 def get_citation_count(arxiv_id):
     try:
@@ -93,9 +112,11 @@ def semantic_sort(query: str, articles: list):
             print("Ready: ", pdf_path)
             fulltext = extract_text_from_pdf(pdf_path)
             article["fulltext"] = fulltext
+            article["generated_summary"] = generate_summary(fulltext)
         except Exception as e:
             print(f"Error processing {article['pdf_url']}: {e}")
             article["fulltext"] = article["summary"]
+            article["generated_summary"] = "--"
         fulltexts.append(article["fulltext"])
 
     text_embeddings = model.encode(fulltexts, convert_to_tensor=True, batch_size=32)
