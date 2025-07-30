@@ -27,6 +27,6 @@ jobs:
       run: |
         poetry install
 
-    - name: Run project main file
+    - name: Run startup test
       run: |
-        poetry run python app/main.py
+        poetry run python tests/startup_test.py
