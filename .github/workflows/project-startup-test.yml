@@ -1,0 +1,32 @@
+name: Project Startup Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-startup:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install Poetry
+      run: |
+        pip install poetry
+
+    - name: Install dependencies
+      run: |
+        poetry install
+
+    - name: Run project main file
+      run: |
+        poetry run python app/main.py
