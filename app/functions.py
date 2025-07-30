@@ -7,13 +7,19 @@ from google import genai
 from datetime import datetime, timedelta, timezone
 from sentence_transformers import SentenceTransformer, util
 
+# Инициализация выбранной модели
 model = SentenceTransformer("allenai-specter")
+
+# Инициализация клиента Google GenAI
 with open(os.path.abspath("app/API_KEY"), "r") as file:
     api_key = file.read().strip()
 client = genai.Client(api_key=api_key)
 
 
 def translate_text(text):
+    """
+        Переводим текст на русский язык
+    """
     response = client.models.generate_content(
         model='gemini-2.0-flash-001',
         contents=['Translate this text to Russian:', text]
@@ -21,6 +27,9 @@ def translate_text(text):
     return response.text
 
 def generate_summary(text):
+    """
+        Генерируем краткое содержание текста - summary
+    """
     response = client.models.generate_content(
         model='gemini-2.0-flash-001',
         contents=['Could you summarize this text?', text]
@@ -28,6 +37,9 @@ def generate_summary(text):
     return translate_text(response.text)
 
 def get_citation_count(arxiv_id):
+    """
+        Получаем количество цитирований статьи по её arXiv ID
+    """
     try:
         r = requests.post(
             'https://api.semanticscholar.org/graph/v1/paper/batch',
@@ -48,6 +60,10 @@ def get_citation_count(arxiv_id):
         return "--"
 
 def search_arxiv(query: str, max_results: int):
+    """
+        Выполняем поиск статей на arXiv по заданному запросу, фильтруем по дате,
+        добавляя информацию о количестве цитирований
+    """
     client = arxiv.Client()
     search = arxiv.Search(
         query=query,
@@ -73,6 +89,9 @@ def search_arxiv(query: str, max_results: int):
     return results
 
 def download_pdf(pdf_url: str, save_dir="pdfs/"):
+    """
+        Скачиваем PDF-файл статьи
+    """
     os.makedirs(save_dir, exist_ok=True)
     paper_id = pdf_url.split("/")[-1]
     save_path = os.path.join(save_dir, f"{paper_id}.pdf")
@@ -83,6 +102,9 @@ def download_pdf(pdf_url: str, save_dir="pdfs/"):
     return save_path
 
 def extract_text_from_pdf(pdf_path: str):
+    """
+        Извлекаем текст из PDF-ки
+    """
     text = ""
     with fitz.open(pdf_path) as doc:
         for page in doc:
@@ -90,6 +112,9 @@ def extract_text_from_pdf(pdf_path: str):
     return text
 
 def compute_quality_score(similarity, citations, pub_year):
+    """
+        Вычисляем "качество" статьи 
+    """
     current_year = datetime.now(timezone.utc).year
     alpha = 0.4
     beta = 0.6
@@ -103,6 +128,13 @@ def safe_int(value: int, default=0):
         return default
 
 def semantic_sort(query: str, articles: list):
+    """
+        Выполняем сортировку списка статей по запросу:
+        - генерируем эмбеддинги текста
+        - скачиваем PDF
+        - извлекаем текст
+        - получаем итоговую оценку (score)
+    """
     query_embedding = model.encode(query, convert_to_tensor=True)
 
     fulltexts = []

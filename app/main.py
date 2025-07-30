@@ -1,6 +1,13 @@
 import flet as ft
 from functions import search_arxiv, semantic_sort
 
+"""
+    Приложение на Flet для семантического поиска статей на arXiv.
+
+    Пользователь вводит запрос — система находит и сортирует статьи по релевантности,
+    учитывая текст, дату публикации и цитируемость. Результаты выводятся с кратким описанием.
+"""
+
 def main(page: ft.Page):
     page.title = "Semantic arXiv Search"
     page.scroll = "auto"
@@ -19,6 +26,7 @@ def main(page: ft.Page):
             page.update()
 
             try:
+                # Ищем 30 статей по запросу
                 articles = search_arxiv(query, 30)
                 sorted_articles = semantic_sort(query, articles)
 
@@ -26,6 +34,7 @@ def main(page: ft.Page):
 
                 if sorted_articles:
                     for article in sorted_articles[:10]:
+                        # Добавляем нужное содержание
                         results_column.controls.append(
                             ft.Container(
                                 content=ft.Column([
@@ -65,6 +74,7 @@ def main(page: ft.Page):
                 print(f"Error during search: {ex}")
         page.update()
 
+    # Кнопка для ввода запроса
     text_input = ft.TextField(
         label="Enter arXiv query",
         on_submit=handle_submit,
@@ -73,6 +83,7 @@ def main(page: ft.Page):
         text_style=ft.TextStyle(color=ft.Colors.WHITE, size=20),
     )
 
+    # Кнопка для отправки запроса
     send_button = ft.ElevatedButton(
         text="Submit",
         on_click=handle_submit,
@@ -80,6 +91,7 @@ def main(page: ft.Page):
         text_style=ft.TextStyle(size=15))
     )
 
+    # Добавляем элементы на страницу
     page.add(
         ft.Text("Semantic arXiv Search", size=35, weight="bold", color=ft.Colors.WHITE),
         ft.Row([text_input, send_button]),
